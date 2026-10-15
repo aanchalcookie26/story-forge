@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Delete Story — StoryForge{% endblock %}
+{% block content %}
+<div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;">
+  <div style="max-width:480px;width:100%;background:linear-gradient(155deg,var(--ink2),var(--ink));border:1px solid rgba(201,50,30,.3);border-radius:20px;padding:44px 36px;text-align:center;">
+    <div style="font-size:52px;margin-bottom:20px;">🗑</div>
+    <h2 style="font-family:'Cinzel',serif;font-size:24px;color:var(--parch);margin-bottom:12px;">Delete Story?</h2>
+    <p style="color:var(--parch-dim);font-style:italic;margin-bottom:8px;">
+      You are about to permanently delete:
+    </p>
+    <p style="font-family:'Cinzel',serif;font-size:18px;color:var(--gold);margin-bottom:24px;">
+      {{ story.cover_emoji }} {{ story.title }}
+    </p>
+    <p style="color:#e87060;font-size:13px;margin-bottom:32px;">
+      This will delete all chapters, choices, ratings, and play sessions. This cannot be undone.
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="sf-btn sf-btn-danger">Yes, Delete Forever</button>
+      </form>
+      <a href="{% url 'story_detail' story_id=story.pk %}" class="sf-btn sf-btn-secondary">Cancel</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

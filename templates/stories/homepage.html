@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% block title %}StoryForge — Interactive Stories{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Hero Section Layout */
+.sf-hero {
+  min-height: 560px; display: flex; align-items: center;
+  position: relative; overflow: hidden; padding: 80px 24px;
+}
+.sf-hero-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(201,151,58,.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(201,79,26,.08) 0%, transparent 50%);
+}
+
+.sf-hero-content { 
+  position: relative; 
+  max-width: 620px; 
+  z-index: 2; 
+}
+
+.sf-hero-eyebrow {
+  font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .3em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.sf-hero-eyebrow::before { content: ''; width: 30px; height: 1px; background: var(--gold); }
+
+.sf-hero-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1.15; color: var(--parch); margin-bottom: 20px;
+  animation: hero-in .8s ease both;
+}
+@keyframes hero-in {
+  from { opacity:0; transform: translateY(24px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.sf-hero-title span { color: var(--gold); }
+
+.sf-hero-sub {
+  font-family: 'Lora', serif; font-style: italic;
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: var(--parch-dim); margin-bottom: 36px; line-height: 1.7;
+  animation: hero-in .8s ease .15s both;
+}
+.sf-hero-cta {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  animation: hero-in .8s ease .3s both;
+}
+
+@keyframes art-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-20px) rotate(2deg); }
+}
+
+.sf-hero-art {
+  position: absolute; 
+  right: 5%; 
+  top: 25%; 
+  font-size: clamp(100px, 15vw, 180px); 
+  opacity: .12;
+  z-index: 1;
+  animation: art-float 6s ease-in-out infinite; 
+  pointer-events: none;
+}
+
+.sf-section { padding: 64px 0; }
+.sf-grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+.sf-grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+.sf-featured {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  border-radius: var(--radius-lg); overflow: hidden;
+  border: 1px solid rgba(201,151,58,.25);
+  margin-bottom: 64px;
+}
+
+.sf-featured-art {
+  background: radial-gradient(ellipse at center, rgba(201,151,58,.18) 0%, transparent 70%),
+              var(--ink2);
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  font-size: 110px; 
+  min-height: 300px;
+  animation: art-float 5s ease-in-out infinite;
+}
+
+.sf-featured-info { padding: 40px 36px; display: flex; flex-direction: column; justify-content: center; }
+.sf-featured-info .sf-genre-tag {
+  font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+}
+.sf-featured-info h3 {
+  font-family: 'Cinzel', serif; font-size: clamp(20px, 3vw, 28px);
+  color: var(--parch); margin-bottom: 14px; line-height: 1.3;
+}
+.sf-featured-info p {
+  color: var(--parch-dim); font-style: italic; font-family: 'Lora', serif;
+  font-size: 15px; margin-bottom: 24px; line-height: 1.7;
+}
+.sf-featured-meta { display: flex; gap: 20px; font-size: 13px; color: var(--parch-faint); margin-bottom: 24px; }
+
+.sf-genres { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 48px; }
+.sf-genre-pill {
+  padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 500;
+  border: 1px solid rgba(201,151,58,.25); color: var(--parch-dim);
+  cursor: pointer; text-decoration: none; transition: all .2s;
+}
+.sf-genre-pill:hover {
+  background: var(--gold-dim); border-color: var(--gold); color: var(--parch);
+}
+
+.sf-stats { display: flex; gap: 40px; padding: 32px 40px; border-radius: var(--radius-lg); background: var(--ink2); border: 1px solid rgba(201,151,58,.15); margin-bottom: 64px; }
+.sf-stat { text-align: center; }
+.sf-stat-num { font-family: 'Cinzel', serif; font-size: 32px; color: var(--gold); display: block; }
+.sf-stat-lbl { font-size: 13px; color: var(--parch-faint); }
+
+@media (max-width:700px) {
+  .sf-featured { grid-template-columns:1fr; }
+  .sf-hero { padding: 60px 20px; }
+  .sf-hero-art { display:none; }
+  .sf-stats { flex-wrap:wrap; gap:20px; padding:20px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sf-hero">
+  <div class="sf-hero-bg"></div>
+  <div class="sf-container">
+    <div class="sf-hero-content">
+      <div class="sf-hero-eyebrow">Interactive Fiction</div>
+      <h1 class="sf-hero-title">
+        Every Choice<br>
+        <span>Shapes the Story</span>
+      </h1>
+      <p class="sf-hero-sub">
+        Dive into branching adventures where your decisions drive the narrative.
+        Fantasy, mystery, sci-fi, horror — dozens of paths, countless endings.
+      </p>
+      <div class="sf-hero-cta">
+        <a href="{% url 'search' %}" class="sf-btn sf-btn-primary">Browse Stories →</a>
+        {% if not user.is_authenticated %}
+        <a href="{% url 'signup' %}" class="sf-btn sf-btn-secondary">Join Free</a>
+        {% else %}
+        <a href="{% url 'create_story' %}" class="sf-btn sf-btn-secondary">Write a Story</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="sf-hero-art">🐉</div>
+</div>
+
+<div class="sf-container">
+
+  <div class="sf-stats">
+    <div class="sf-stat"><span class="sf-stat-num">8</span><span class="sf-stat-lbl">Genres</span></div>
+    <div class="sf-stat"><span class="sf-stat-num">{{ top_stories.count }}+</span><span class="sf-stat-lbl">Stories</span></div>
+    <div class="sf-stat"><span class="sf-stat-num">∞</span><span class="sf-stat-lbl">Possible Paths</span></div>
+    <div class="sf-stat"><span class="sf-stat-num">10+</span><span class="sf-stat-lbl">Chapters Each</span></div>
+  </div>
+
+  {% if featured %}
+  <section class="sf-section" style="padding-top:0">
+    <div class="sf-section-title">Featured Story</div>
+    <div class="sf-divider"></div>
+    <a href="{% url 'story_detail' story_id=featured.pk %}" style="display:block; color:inherit; text-decoration:none;">
+      <div class="sf-featured sf-card" style="transform:none;">
+        <div class="sf-featured-art">{{ featured.cover_emoji }}</div>
+        <div class="sf-featured-info">
+          <div class="sf-genre-tag">{{ featured.get_genre_display }} · Featured</div>
+          <h3>{{ featured.title }}</h3>
+          <p>{{ featured.description }}</p>
+          <div class="sf-featured-meta">
+            <span>🎮 {{ featured.play_count|floatformat:0 }} plays</span>
+            <span>⭐ {{ featured.average_rating|floatformat:1 }}</span>
+            <span>📚 {{ featured.node_count }} chapters</span>
+          </div>
+          <span class="sf-btn sf-btn-primary" style="width:fit-content;">Play Now →</span>
+        </div>
+      </div>
+    </a>
+  </section>
+  {% endif %}
+
+  <section class="sf-section" style="padding-top:0">
+    <div class="sf-section-title">Browse by Genre</div>
+    <div class="sf-divider"></div>
+    <div class="sf-genres">
+      {% for code, label in genre_list %}
+      <a href="{% url 'search' %}?genre={{ code }}" class="sf-genre-pill">
+        {% if code == 'fantasy' %}🐉{% elif code == 'scifi' %}🛸{% elif code == 'mystery' %}🔍{% elif code == 'horror' %}👻{% elif code == 'adventure' %}🗺️{% elif code == 'romance' %}💌{% elif code == 'thriller' %}🔐{% elif code == 'comedy' %}😂{% endif %}
+        {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="sf-section" style="padding-top:0">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+      <div>
+        <div class="sf-section-title">Top Stories</div>
+        <div class="sf-divider"></div>
+      </div>
+      <a href="{% url 'leaderboard' %}" class="sf-btn sf-btn-secondary" style="padding:8px 18px; font-size:13px;">Full Leaderboard →</a>
+    </div>
+    <div class="sf-grid-4">
+      {% for story in top_stories %}
+      <a href="{% url 'story_detail' story_id=story.pk %}" style="color:inherit; text-decoration:none; display:flex;">
+        <div class="sf-card sf-story-card" style="width:100%;">
+          <div class="sf-card-body" style="display:flex;flex-direction:column;height:100%;">
+            <span class="sf-card-emoji">{{ story.cover_emoji }}</span>
+            <div class="sf-genre-tag">{{ story.get_genre_display }}</div>
+            <div class="sf-card-title">{{ story.title }}</div>
+            <div class="sf-card-desc">{{ story.description|truncatechars:90 }}</div>
+            <div class="sf-card-meta">
+              <span class="sf-plays">🎮 {{ story.play_count }}</span>
+              <span class="sf-stars">★ {{ story.avg_rating|floatformat:1|default:"—" }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <p style="color:var(--parch-faint); grid-column:1/-1;">No stories yet. <a href="{% url 'create_story' %}">Be the first!</a></p>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if newest %}
+  <section class="sf-section" style="padding-top:0">
+    <div class="sf-section-title">Just Added</div>
+    <div class="sf-divider"></div>
+    <div class="sf-grid-3">
+      {% for story in newest %}
+      <a href="{% url 'story_detail' story_id=story.pk %}" style="color:inherit; text-decoration:none; display:flex;">
+        <div class="sf-card sf-story-card" style="width:100%;">
+          <div class="sf-card-body" style="display:flex;flex-direction:column;height:100%;">
+            <span class="sf-card-emoji">{{ story.cover_emoji }}</span>
+            <div class="sf-genre-tag">{{ story.get_genre_display }}</div>
+            <div class="sf-card-title">{{ story.title }}</div>
+            <div class="sf-card-desc">{{ story.description|truncatechars:100 }}</div>
+            <div class="sf-card-meta">
+              <span class="sf-plays">🎮 {{ story.play_count }}</span>
+              <span style="color:var(--parch-faint);">{{ story.created_at|date:"M j, Y" }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if not user.is_authenticated %}
+  <section style="text-align:center; padding:64px 0; border-top:1px solid rgba(201,151,58,.1);">
+    <div style="font-size:48px; margin-bottom:16px;">✨</div>
+    <h2 class="sf-section-title" style="margin-bottom:12px;">Ready to Begin?</h2>
+    <p style="color:var(--parch-faint); font-style:italic; margin-bottom:28px;">Join thousands of readers shaping their own stories.</p>
+    <a href="{% url 'signup' %}" class="sf-btn sf-btn-primary">Create Your Account →</a>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

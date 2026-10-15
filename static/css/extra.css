@@ -1,0 +1,56 @@
+/* StoryForge — Extra utility styles */
+
+/* Animated gold shimmer for headings */
+.sf-shimmer {
+  background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+@keyframes shimmer { to { background-position: 200% center; } }
+
+/* Scroll-fade-in utility */
+.sf-fade-in {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.sf-fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* Story grid responsive helpers */
+.sf-grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+
+/* Parchment text block */
+.sf-parch-block {
+  background: rgba(245,237,216,.04);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-family: 'Lora', serif;
+  font-style: italic;
+  color: var(--parch-dim);
+  line-height: 1.8;
+}
+
+/* Loading spinner */
+.sf-spinner {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 3px solid rgba(201,151,58,.2);
+  border-top-color: var(--gold);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Tooltip */
+[data-tip] { position: relative; cursor: help; }
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink2); color: var(--parch); font-size: 12px;
+  padding: 5px 10px; border-radius: 6px; white-space: nowrap;
+  border: 1px solid rgba(201,151,58,.25);
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+  z-index: 100;
+}
+[data-tip]:hover::after { opacity: 1; }

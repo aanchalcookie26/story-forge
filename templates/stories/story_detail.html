@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block title %}{{ story.title }} — StoryForge{% endblock %}
+
+{% block extra_head %}
+<style>
+.sd-hero {
+  padding: 60px 0 48px;
+  border-bottom: 1px solid rgba(201,151,58,.12);
+  margin-bottom: 48px; position: relative; overflow: hidden;
+}
+.sd-hero-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 40%, rgba(201,151,58,.09) 0%, transparent 55%);
+  pointer-events: none;
+}
+.sd-hero-inner { display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; }
+.sd-cover {
+  width: 160px; height: 160px; flex-shrink: 0;
+  background: linear-gradient(145deg, var(--ink2), var(--ink3));
+  border: 1px solid rgba(201,151,58,.25); border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 72px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.5), var(--glow);
+}
+.sd-meta { flex: 1; min-width: 240px; }
+.sd-genre-tag {
+  font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+}
+.sd-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(24px, 4vw, 42px);
+  color: var(--parch); line-height: 1.25; margin-bottom: 14px;
+}
+.sd-author { font-size: 14px; color: var(--parch-faint); margin-bottom: 16px; }
+.sd-author a { color: var(--gold); }
+.sd-desc {
+  font-family: 'Lora', serif; font-style: italic;
+  font-size: 16px; color: var(--parch-dim); line-height: 1.75;
+  margin-bottom: 24px;
+}
+.sd-stats-row { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 28px; }
+.sd-stat { display: flex; flex-direction: column; }
+.sd-stat-val { font-family: 'Cinzel', serif; font-size: 22px; color: var(--gold); }
+.sd-stat-lbl { font-size: 11px; color: var(--parch-faint); letter-spacing: .08em; }
+.sd-cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+/* Star rating */
+.sd-rate-section { margin: 40px 0; }
+.sd-rate-title { font-family:'Cinzel',serif; font-size:14px; color:var(--parch-dim); letter-spacing:.1em; margin-bottom:14px; }
+#star-select { display:flex; gap:12px; font-size:36px; cursor:pointer; }
+#star-select .sf-star { opacity:.3; transition: opacity .15s, transform .2s; }
+#star-select .sf-star:hover, #star-select .sf-star.active { opacity:1; transform:scale(1.15); }
+/* Reviews */
+.sd-review {
+  display: flex; gap: 14px; padding: 16px 0;
+  border-bottom: 1px solid rgba(201,151,58,.08);
+}
+.sd-review-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--gold-dim); border: 1px solid rgba(201,151,58,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.sd-review-stars { color: #f0c040; font-size: 14px; }
+.sd-review-user { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.sd-review-date { font-size: 12px; color: var(--parch-faint); }
+/* Layout */
+.sd-layout { display: grid; grid-template-columns: 1fr 320px; gap: 40px; }
+.sd-sidebar { display: flex; flex-direction: column; gap: 20px; }
+.sd-sidebar-card {
+  background: var(--ink2); border: 1px solid rgba(201,151,58,.15);
+  border-radius: var(--radius-lg); padding: 20px 22px;
+}
+.sd-sidebar-card h4 {
+  font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: .1em;
+  color: var(--gold); margin-bottom: 14px;
+}
+@media (max-width:768px) { .sd-layout { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sf-container">
+  <!-- Hero -->
+  <div class="sd-hero">
+    <div class="sd-hero-bg"></div>
+    <div class="sd-hero-inner">
+      <div class="sd-cover">{{ story.cover_emoji }}</div>
+      <div class="sd-meta">
+        <div class="sd-genre-tag">{{ story.get_genre_display }}</div>
+        <h1 class="sd-title">{{ story.title }}</h1>
+        <p class="sd-author">by <a href="{% url 'profile' username=story.author.username %}">{{ story.author.username }}</a> · {{ story.created_at|date:"M j, Y" }}</p>
+        <p class="sd-desc">{{ story.description }}</p>
+        <div class="sd-stats-row">
+          <div class="sd-stat"><span class="sd-stat-val">🎮 {{ story.play_count }}</span><span class="sd-stat-lbl">Total Plays</span></div>
+          <div class="sd-stat"><span class="sd-stat-val">⭐ {{ avg }}</span><span class="sd-stat-lbl">Avg Rating</span></div>
+          <div class="sd-stat"><span class="sd-stat-val">📚 {{ node_count }}</span><span class="sd-stat-lbl">Chapters</span></div>
+          <div class="sd-stat"><span class="sd-stat-val">🎭 {{ ending_count }}</span><span class="sd-stat-lbl">Endings</span></div>
+        </div>
+        <div class="sd-cta-row">
+          {% if user.is_authenticated %}
+            {% if user_session %}
+              <a href="{% url 'story_play' story_id=story.pk %}?node={{ user_session.current_node.pk }}&session={{ user_session.pk }}" class="sf-btn sf-btn-primary">▶ Resume Story</a>
+              <a href="{% url 'story_play' story_id=story.pk %}" class="sf-btn sf-btn-secondary">↺ Start Fresh</a>
+            {% else %}
+              <a href="{% url 'story_play' story_id=story.pk %}" class="sf-btn sf-btn-primary">▶ Play Story</a>
+            {% endif %}
+            {% if story.author == user %}
+              <a href="{% url 'delete_story' story_id=story.pk %}" class="sf-btn sf-btn-danger">🗑 Delete</a>
+            {% endif %}
+          {% else %}
+            <a href="{% url 'signin' %}?next={% url 'story_play' story_id=story.pk %}" class="sf-btn sf-btn-primary">Sign In to Play →</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sd-layout">
+    <div>
+      <!-- Rating -->
+      {% if user.is_authenticated %}
+      <div class="sd-rate-section">
+        <div class="sd-rate-title">
+          {% if user_rating %}Your Rating: {{ user_rating.stars }}★ — Update it:{% else %}Rate this story:{% endif %}
+        </div>
+        <form method="post" action="{% url 'rate_story' story_id=story.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="stars" id="stars-val" value="{{ user_rating.stars|default:5 }}">
+          <div id="star-select">
+            {% for i in "12345" %}
+            <span class="sf-star {% if user_rating and user_rating.stars >= forloop.counter %}active{% endif %}" data-v="{{ forloop.counter }}"
+              onclick="setRating({{ forloop.counter }},this.closest('form'))">★</span>
+            {% endfor %}
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Recent Reviews -->
+      {% if recent_ratings %}
+      <h3 style="font-family:'Cinzel',serif; font-size:16px; color:var(--parch); margin-bottom:20px;">Reader Reviews</h3>
+      {% for rating in recent_ratings %}
+      <div class="sd-review">
+        <div class="sd-review-avatar">
+          {% if rating.user.account.avatar_emoji %}{{ rating.user.account.avatar_emoji }}{% else %}📖{% endif %}
+        </div>
+        <div>
+          <div class="sd-review-user">
+            <a href="{% url 'profile' username=rating.user.username %}">{{ rating.user.username }}</a>
+          </div>
+          <div class="sd-review-stars">{% for i in "12345" %}{% if forloop.counter <= rating.stars %}★{% else %}☆{% endif %}{% endfor %}</div>
+          <div class="sd-review-date">{{ rating.created_at|date:"M j, Y" }}</div>
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sd-sidebar">
+      <div class="sd-sidebar-card">
+        <h4>Story Info</h4>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--parch-dim);">
+          <div><span style="color:var(--parch-faint);">Genre</span> — {{ story.get_genre_display }}</div>
+          <div><span style="color:var(--parch-faint);">Chapters</span> — {{ node_count }}</div>
+          <div><span style="color:var(--parch-faint);">Endings</span> — {{ ending_count }}</div>
+          <div><span style="color:var(--parch-faint);">Plays</span> — {{ story.play_count }}</div>
+          <div><span style="color:var(--parch-faint);">Rating</span> — {{ avg }}★ ({{ story.rating_count }} votes)</div>
+          <div><span style="color:var(--parch-faint);">Published</span> — {{ story.created_at|date:"M j, Y" }}</div>
+        </div>
+      </div>
+      <div class="sd-sidebar-card">
+        <h4>Author</h4>
+        <a href="{% url 'profile' username=story.author.username %}" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--gold-dim);border:1px solid rgba(201,151,58,.25);display:flex;align-items:center;justify-content:center;font-size:22px;">
+            {% if story.author.account.avatar_emoji %}{{ story.author.account.avatar_emoji }}{% else %}📖{% endif %}
+          </div>
+          <div>
+            <div style="font-weight:600;color:var(--parch);">{{ story.author.username }}</div>
+            <div style="font-size:12px;color:var(--gold);">View Profile →</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setRating(v, form){
+  document.getElementById('stars-val').value = v;
+  document.querySelectorAll('#star-select .sf-star').forEach((s,i)=>{
+    s.classList.toggle('active', i<v);
+  });
+  setTimeout(()=>form.submit(), 200);
+}
+document.querySelectorAll('#star-select .sf-star').forEach((s,i,arr)=>{
+  s.addEventListener('mouseenter',()=> arr.forEach((x,j)=> x.style.opacity = j<=i?'1':'.3'));
+  s.addEventListener('mouseleave',()=> arr.forEach(x=> x.style.opacity = x.classList.contains('active')?'1':'.3'));
+});
+// init star display
+document.querySelectorAll('#star-select .sf-star').forEach(s=>{
+  s.style.opacity = s.classList.contains('active')?'1':'.3';
+});
+</script>
+{% endblock %}

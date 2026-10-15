@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}New Story — StoryForge{% endblock %}
+{% block extra_head %}
+<style>
+.cs-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:60px 20px;}
+.cs-card{width:100%;max-width:580px;background:linear-gradient(155deg,var(--ink2),var(--ink));border:1px solid rgba(201,151,58,.22);border-radius:20px;padding:44px 40px;position:relative;overflow:hidden;}
+.cs-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.cs-title{font-family:'Cinzel',serif;font-size:26px;color:var(--parch);margin-bottom:6px;}
+.cs-sub{font-size:14px;color:var(--parch-faint);font-style:italic;margin-bottom:32px;}
+.cs-preview-emoji{font-size:52px;display:block;text-align:center;margin-bottom:16px;transition:transform .2s;}
+.genre-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px;}
+.genre-chip{padding:8px 6px;border-radius:8px;border:1px solid rgba(201,151,58,.2);cursor:pointer;font-size:12px;text-align:center;transition:all .2s;background:transparent;color:var(--parch-dim);}
+.genre-chip:hover{border-color:var(--gold);background:var(--gold-dim);color:var(--parch);}
+.genre-chip.selected{border-color:var(--gold);background:var(--gold-dim);color:var(--parch);}
+@media(max-width:500px){.cs-card{padding:28px 18px;}.genre-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="cs-wrap">
+  <div class="cs-card">
+    <span class="cs-preview-emoji" id="emoji-preview">📖</span>
+    <h1 class="cs-title">Forge a New Story</h1>
+    <p class="cs-sub">Set the stage. Add chapters and choices from the admin panel after creating.</p>
+
+    {% if form.errors %}
+    <div class="sf-form-errors">Please fix the errors below.</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="sf-form-group">
+        <label>Story Title</label>
+        {{ form.title }}
+        {% if form.title.errors %}<div class="sf-field-error">{{ form.title.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="sf-form-group">
+        <label>Cover Emoji</label>
+        {{ form.cover_emoji }}
+        {% if form.cover_emoji.errors %}<div class="sf-field-error">{{ form.cover_emoji.errors.0 }}</div>{% endif %}
+        <div style="font-size:12px;color:var(--parch-faint);margin-top:5px;">One emoji that represents your story's world</div>
+      </div>
+      <div class="sf-form-group">
+        <label>Genre</label>
+        {{ form.genre }}
+      </div>
+      <div class="sf-form-group">
+        <label>Description</label>
+        {{ form.description }}
+        {% if form.description.errors %}<div class="sf-field-error">{{ form.description.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="sf-form-group" style="display:flex;align-items:center;gap:12px;">
+        {{ form.is_published }}
+        <label for="{{ form.is_published.id_for_label }}" style="margin-bottom:0;cursor:pointer;">
+          Publish immediately (readers can find and play it)
+        </label>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;">
+        <button type="submit" class="sf-btn sf-btn-primary">Create Story →</button>
+        <a href="{% url 'homepage' %}" class="sf-btn sf-btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+const emojiInput = document.querySelector('input[name="cover_emoji"]');
+const emojiPreview = document.getElementById('emoji-preview');
+if(emojiInput && emojiPreview){
+  emojiInput.addEventListener('input',()=>{
+    const v = emojiInput.value.trim();
+    emojiPreview.textContent = v || '📖';
+    emojiPreview.style.transform = 'scale(1.2)';
+    setTimeout(()=> emojiPreview.style.transform = 'scale(1)', 200);
+  });
+}
+</script>
+{% endblock %}

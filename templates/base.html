@@ -1,0 +1,390 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}StoryForge{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── RESET & ROOT ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold:        #c9973a;
+      --gold-light:  #e8b96a;
+      --gold-dim:    rgba(201,151,58,0.18);
+      --ink:         #0f0c06;
+      --ink2:        #1c1610;
+      --ink3:        #252016;
+      --parch:       #f5edd8;
+      --parch-dim:   rgba(245,237,216,0.7);
+      --parch-faint: rgba(245,237,216,0.35);
+      --ember:       #c94f1a;
+      --teal:        #1a9e7e;
+      --radius:      10px;
+      --radius-lg:   16px;
+      --shadow:      0 4px 32px rgba(0,0,0,0.55);
+      --glow:        0 0 40px rgba(201,151,58,0.25);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--ink);
+      color: var(--parch);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    a { color: var(--gold); text-decoration: none; transition: color .2s; }
+    a:hover { color: var(--gold-light); }
+    img { max-width: 100%; }
+    ::selection { background: rgba(201,151,58,0.35); }
+
+    /* ── PARTICLES ────────────────────────────────────────── */
+    #sf-particles {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .sf-spark {
+      position: absolute; width: 2px; height: 2px;
+      background: var(--gold-light); border-radius: 50%;
+      animation: sf-float linear infinite; opacity: 0;
+    }
+    @keyframes sf-float {
+      0%   { transform: translateY(0) translateX(0); opacity: 0; }
+      10%  { opacity: .7; }
+      90%  { opacity: .3; }
+      100% { transform: translateY(-100vh) translateX(var(--dx,20px)); opacity: 0; }
+    }
+
+    /* ── NAVBAR ───────────────────────────────────────────── */
+    #sf-nav {
+      position: sticky; top: 0; z-index: 900;
+      background: rgba(15,12,6,0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,151,58,0.18);
+      padding: 0 24px;
+    }
+    .sf-nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; gap: 12px;
+      height: 62px;
+    }
+    .sf-brand {
+      font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700;
+      color: var(--gold); letter-spacing: .1em;
+      text-shadow: 0 0 20px rgba(201,151,58,.4);
+      flex-shrink: 0;
+      animation: brand-glow 4s ease-in-out infinite;
+    }
+    @keyframes brand-glow {
+      0%,100% { text-shadow: 0 0 20px rgba(201,151,58,.3); }
+      50%      { text-shadow: 0 0 40px rgba(201,151,58,.7), 0 0 10px var(--gold); }
+    }
+    .sf-nav-links {
+      display: flex; align-items: center; gap: 4px; margin-left: 24px; flex: 1;
+    }
+    .sf-nav-links a {
+      color: var(--parch-dim); font-size: 14px; font-weight: 500;
+      padding: 6px 14px; border-radius: 20px;
+      transition: all .2s;
+    }
+    .sf-nav-links a:hover, .sf-nav-links a.active {
+      color: var(--parch); background: var(--gold-dim);
+    }
+    .sf-nav-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .sf-btn-sm {
+      padding: 7px 18px; border-radius: 20px; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all .2s; white-space: nowrap; border: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .sf-btn-outline {
+      background: transparent; border: 1px solid rgba(201,151,58,.4); color: var(--gold);
+    }
+    .sf-btn-outline:hover { background: var(--gold-dim); border-color: var(--gold); }
+    .sf-btn-gold {
+      background: var(--gold); color: var(--ink); font-weight: 600;
+    }
+    .sf-btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .sf-nav-user {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 14px; color: var(--parch-dim);
+    }
+    .sf-avatar-sm {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--gold-dim); border: 1px solid rgba(201,151,58,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .sf-hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      color: var(--gold); font-size: 22px; margin-left: auto;
+    }
+
+    /* ── MESSAGES ─────────────────────────────────────────── */
+    .sf-messages { position: fixed; top: 72px; right: 16px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+    .sf-msg {
+      padding: 12px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 500;
+      min-width: 240px; max-width: 360px;
+      animation: msg-in .3s ease, msg-out .3s ease 4.7s forwards;
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer;
+    }
+    @keyframes msg-in  { from { opacity:0; transform: translateX(40px); } }
+    @keyframes msg-out { to   { opacity:0; transform: translateX(40px); } }
+    .sf-msg-success { background: #1a3322; border: 1px solid #2a5a3a; color: #6dbf82; }
+    .sf-msg-error   { background: #2a1510; border: 1px solid #5a2a20; color: #e87060; }
+    .sf-msg-info    { background: var(--ink3); border: 1px solid rgba(201,151,58,.3); color: var(--gold); }
+    .sf-msg-warning { background: #2a2010; border: 1px solid #5a4a20; color: var(--gold-light); }
+
+    /* ── MAIN CONTENT ─────────────────────────────────────── */
+    #sf-main { position: relative; z-index: 1; }
+    .sf-container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .sf-container-sm { max-width: 680px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── FOOTER ───────────────────────────────────────────── */
+    #sf-footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid rgba(201,151,58,.12);
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--parch-faint);
+      font-size: 13px;
+      margin-top: 80px;
+    }
+    #sf-footer .sf-footer-brand {
+      font-family: 'Cinzel', serif; color: var(--gold); font-size: 14px;
+      margin-bottom: 8px; display: block;
+    }
+
+    /* ── CARDS ────────────────────────────────────────────── */
+    .sf-card {
+      background: linear-gradient(145deg, var(--ink2), var(--ink));
+      border: 1px solid rgba(201,151,58,.18);
+      border-radius: var(--radius-lg); overflow: hidden;
+      transition: all .3s ease;
+    }
+    .sf-card:hover {
+      border-color: rgba(201,151,58,.45);
+      box-shadow: var(--shadow), var(--glow);
+      transform: translateY(-3px);
+    }
+    .sf-card-body { padding: 22px 24px; }
+
+    /* ── STORY CARD ───────────────────────────────────────── */
+    .sf-story-card {
+      display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+    }
+    .sf-story-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 20% 10%, rgba(201,151,58,.07) 0%, transparent 65%);
+      opacity: 0; transition: opacity .3s;
+    }
+    .sf-story-card:hover::before { opacity: 1; }
+    .sf-story-card .sf-card-emoji {
+      font-size: 40px; display: block; margin-bottom: 14px;
+    }
+    .sf-story-card .sf-genre-tag {
+      font-family: 'Cinzel', serif; font-size: 10px;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 8px;
+    }
+    .sf-story-card .sf-card-title {
+      font-family: 'Cinzel', serif; font-size: 16px;
+      color: var(--parch); line-height: 1.4; margin-bottom: 10px;
+    }
+    .sf-story-card .sf-card-desc {
+      font-size: 13px; color: var(--parch-faint); line-height: 1.65;
+      font-style: italic; flex: 1;
+    }
+    .sf-story-card .sf-card-meta {
+      display: flex; align-items: center; gap: 16px;
+      margin-top: 16px; padding-top: 14px;
+      border-top: 1px solid rgba(201,151,58,.12);
+      font-size: 12px; color: var(--parch-faint);
+    }
+    .sf-story-card .sf-card-meta .sf-plays { color: var(--gold-light); }
+    .sf-stars { color: #f0c040; font-size: 12px; }
+
+    /* ── SECTION HEADINGS ─────────────────────────────────── */
+    .sf-section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(20px, 3vw, 28px);
+      color: var(--parch); margin-bottom: 6px;
+    }
+    .sf-section-sub {
+      font-size: 14px; color: var(--parch-faint); margin-bottom: 32px;
+      font-style: italic;
+    }
+    .sf-divider {
+      width: 60px; height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      margin: 12px 0 24px;
+    }
+
+    /* ── FORMS ────────────────────────────────────────────── */
+    .sf-form-group { margin-bottom: 20px; }
+    .sf-form-group label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: var(--parch-dim); margin-bottom: 8px; letter-spacing: .03em;
+    }
+    .sf-form-group input,
+    .sf-form-group select,
+    .sf-form-group textarea {
+      width: 100%; padding: 12px 16px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(201,151,58,.25);
+      border-radius: var(--radius);
+      color: var(--parch); font-family: 'Inter', sans-serif; font-size: 15px;
+      transition: all .2s; outline: none;
+    }
+    .sf-form-group input:focus,
+    .sf-form-group select:focus,
+    .sf-form-group textarea:focus {
+      border-color: var(--gold); background: rgba(201,151,58,.06);
+      box-shadow: 0 0 0 3px rgba(201,151,58,.12);
+    }
+    .sf-form-group select option { background: var(--ink2); }
+    .sf-form-group .sf-field-error {
+      color: #e87060; font-size: 12px; margin-top: 5px;
+    }
+    .sf-form-errors {
+      background: rgba(201,50,30,.12); border: 1px solid rgba(201,50,30,.3);
+      border-radius: var(--radius); padding: 12px 16px; margin-bottom: 20px;
+      color: #e87060; font-size: 14px;
+    }
+    .sf-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 28px; border-radius: var(--radius); font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all .25s; border: none;
+      font-family: 'Inter', sans-serif; letter-spacing: .02em; white-space: nowrap;
+    }
+    .sf-btn-primary {
+      background: var(--gold); color: var(--ink);
+    }
+    .sf-btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,151,58,.3); }
+    .sf-btn-secondary {
+      background: transparent; color: var(--gold);
+      border: 1px solid rgba(201,151,58,.4);
+    }
+    .sf-btn-secondary:hover { background: var(--gold-dim); border-color: var(--gold); }
+    .sf-btn-danger {
+      background: rgba(201,50,30,.15); color: #e87060;
+      border: 1px solid rgba(201,50,30,.3);
+    }
+    .sf-btn-danger:hover { background: rgba(201,50,30,.25); }
+    .sf-btn-full { width: 100%; }
+
+    /* ── BADGES ───────────────────────────────────────────── */
+    .sf-badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; letter-spacing: .05em;
+    }
+    .sf-badge-gold   { background: rgba(201,151,58,.18); color: var(--gold); }
+    .sf-badge-good   { background: rgba(29,158,117,.18); color: #6dbf82; }
+    .sf-badge-bad    { background: rgba(201,79,26,.18);  color: #e87060; }
+    .sf-badge-neutral{ background: rgba(138,135,128,.18); color: #aaa; }
+
+    /* ── RESPONSIVE ───────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sf-nav-links { display: none; }
+      .sf-hamburger { display: block; }
+      .sf-nav-links.open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 62px; left: 0; right: 0;
+        background: rgba(15,12,6,.97); padding: 16px; gap: 4px;
+      }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Particles -->
+<div id="sf-particles"></div>
+
+<!-- Navbar -->
+<nav id="sf-nav">
+  <div class="sf-nav-inner">
+    <a class="sf-brand" href="{% url 'homepage' %}">✦ StoryForge</a>
+    <div class="sf-nav-links" id="sf-nav-links">
+      <a href="{% url 'homepage' %}" {% if request.resolver_match.url_name == 'homepage' %}class="active"{% endif %}>Home</a>
+      <a href="{% url 'leaderboard' %}" {% if request.resolver_match.url_name == 'leaderboard' %}class="active"{% endif %}>Leaderboard</a>
+      <a href="{% url 'search' %}" {% if request.resolver_match.url_name == 'search' %}class="active"{% endif %}>Browse</a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'create_story' %}" {% if request.resolver_match.url_name == 'create_story' %}class="active"{% endif %}>+ New Story</a>
+      {% endif %}
+    </div>
+    <div class="sf-nav-right">
+      {% if user.is_authenticated %}
+        <div class="sf-nav-user">
+          <a href="{% url 'profile' username=user.username %}">
+            <div class="sf-avatar-sm">
+              {% if user.account.avatar_emoji %}{{ user.account.avatar_emoji }}{% else %}📖{% endif %}
+            </div>
+          </a>
+          <a href="{% url 'signout' %}" class="sf-btn-sm sf-btn-outline">Sign Out</a>
+        </div>
+      {% else %}
+        <a href="{% url 'signin' %}" class="sf-btn-sm sf-btn-outline">Sign In</a>
+        <a href="{% url 'signup' %}" class="sf-btn-sm sf-btn-gold">Join Free</a>
+      {% endif %}
+    </div>
+    <button class="sf-hamburger" onclick="document.getElementById('sf-nav-links').classList.toggle('open')">☰</button>
+  </div>
+</nav>
+
+<!-- Messages -->
+{% if messages %}
+<div class="sf-messages" id="sf-messages">
+  {% for msg in messages %}
+  <div class="sf-msg sf-msg-{{ msg.tags|default:'info' }}" onclick="this.remove()">
+    {% if msg.tags == 'success' %}✓{% elif msg.tags == 'error' %}✗{% else %}ℹ{% endif %}
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main -->
+<main id="sf-main">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer id="sf-footer">
+  <span class="sf-footer-brand">✦ StoryForge</span>
+  Every choice changes everything. &nbsp;·&nbsp;
+  <a href="{% url 'leaderboard' %}">Leaderboard</a> &nbsp;·&nbsp;
+  <a href="{% url 'search' %}">Browse Stories</a>
+</footer>
+
+<script>
+  // Particles
+  (function(){
+    const c = document.getElementById('sf-particles');
+    for(let i=0;i<35;i++){
+      const s = document.createElement('div');
+      s.className='sf-spark';
+      s.style.left = Math.random()*100+'%';
+      s.style.bottom = '-4px';
+      s.style.animationDuration = (7+Math.random()*12)+'s';
+      s.style.animationDelay = (Math.random()*14)+'s';
+      s.style.setProperty('--dx',(Math.random()*60-30)+'px');
+      c.appendChild(s);
+    }
+  })();
+
+  // Auto-dismiss messages
+  setTimeout(()=>{
+    const msgs = document.getElementById('sf-messages');
+    if(msgs) msgs.style.transition='opacity .5s', msgs.style.opacity='0', setTimeout(()=>msgs.remove(),500);
+  }, 5000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

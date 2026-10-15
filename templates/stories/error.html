@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}{{ code }} — StoryForge{% endblock %}
+{% block content %}
+<div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;text-align:center;">
+  <div>
+    <div style="font-size:80px;margin-bottom:16px;">{% if code == 404 %}🗺️{% else %}⚡{% endif %}</div>
+    <h1 style="font-family:'Cinzel',serif;font-size:clamp(32px,6vw,72px);color:var(--gold);margin-bottom:12px;">{{ code }}</h1>
+    <h2 style="font-family:'Cinzel',serif;font-size:20px;color:var(--parch);margin-bottom:16px;">{{ msg }}</h2>
+    <p style="color:var(--parch-faint);font-style:italic;margin-bottom:32px;max-width:400px;margin-left:auto;margin-right:auto;">
+      {% if code == 404 %}This path leads to an unwritten chapter. The story you seek does not exist — yet.
+      {% else %}Something went wrong in the forge. Try again in a moment.{% endif %}
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'homepage' %}" class="sf-btn sf-btn-primary">🏠 Go Home</a>
+      <a href="{% url 'search' %}" class="sf-btn sf-btn-secondary">Browse Stories</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

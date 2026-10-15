@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Leaderboard — StoryForge{% endblock %}
+
+{% block extra_head %}
+<style>
+.lb-header { padding: 56px 0 36px; text-align: center; border-bottom: 1px solid rgba(201,151,58,.12); margin-bottom: 40px; }
+.lb-header h1 { font-family:'Cinzel',serif; font-size:clamp(28px,5vw,48px); color:var(--gold); margin-bottom:10px; text-shadow:0 0 40px rgba(201,151,58,.3); }
+.lb-header p { color:var(--parch-faint); font-style:italic; }
+/* Filter tabs */
+.lb-filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:36px; }
+.lb-filter-tab {
+  padding:8px 20px; border-radius:20px; font-size:13px; font-weight:500;
+  border:1px solid rgba(201,151,58,.25); color:var(--parch-dim);
+  text-decoration:none; transition:all .2s;
+}
+.lb-filter-tab:hover, .lb-filter-tab.active {
+  background:var(--gold-dim); border-color:var(--gold); color:var(--parch);
+}
+/* Table */
+.lb-table { width:100%; border-collapse:collapse; }
+.lb-table thead tr {
+  border-bottom: 1px solid rgba(201,151,58,.2);
+}
+.lb-table th {
+  padding:12px 16px; font-family:'Cinzel',serif; font-size:11px;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--gold);
+  text-align:left; font-weight:600;
+}
+.lb-table td { padding:16px; vertical-align:middle; }
+.lb-table tr { border-bottom:1px solid rgba(201,151,58,.07); transition:background .2s; }
+.lb-table tbody tr:hover { background:rgba(201,151,58,.05); }
+.lb-rank {
+  font-family:'Cinzel',serif; font-size:20px; font-weight:700;
+  width:50px; text-align:center;
+}
+.lb-rank-1 { color:#FFD700; }
+.lb-rank-2 { color:#C0C0C0; }
+.lb-rank-3 { color:#CD7F32; }
+.lb-rank-other { color:var(--parch-faint); }
+.lb-story-info { display:flex; align-items:center; gap:14px; }
+.lb-emoji { font-size:28px; flex-shrink:0; }
+.lb-story-title { font-family:'Cinzel',serif; font-size:15px; color:var(--parch); margin-bottom:4px; }
+.lb-story-meta { font-size:12px; color:var(--parch-faint); }
+.lb-genre-badge {
+  display:inline-flex; padding:3px 10px; border-radius:20px;
+  font-size:11px; font-weight:600; background:rgba(201,151,58,.12); color:var(--gold);
+  white-space:nowrap;
+}
+.lb-plays { font-family:'Cinzel',serif; font-size:16px; color:var(--gold-light); }
+.lb-rating { font-size:16px; color:#f0c040; }
+.lb-play-btn {
+  padding:8px 18px; border-radius:8px; background:var(--gold); color:var(--ink);
+  font-size:12px; font-weight:600; text-decoration:none; transition:all .2s;
+  white-space:nowrap; display:inline-block;
+}
+.lb-play-btn:hover { background:var(--gold-light); transform:translateY(-1px); color:var(--ink); }
+@media (max-width:700px) {
+  .lb-table thead { display:none; }
+  .lb-table tr { display:block; padding:16px; border:1px solid rgba(201,151,58,.12); border-radius:12px; margin-bottom:12px; }
+  .lb-table td { display:block; padding:4px 0; }
+  .lb-rank { width:auto; text-align:left; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sf-container">
+  <div class="lb-header">
+    <h1>🏆 Story Leaderboard</h1>
+    <p>Ranked by plays · The most beloved tales in the forge</p>
+  </div>
+
+  <!-- Genre Filters -->
+  <div class="lb-filters">
+    <a href="{% url 'leaderboard' %}" class="lb-filter-tab {% if not selected_genre %}active{% endif %}">All Genres</a>
+    {% for code, label in genre_list %}
+    <a href="{% url 'leaderboard' %}?genre={{ code }}" class="lb-filter-tab {% if selected_genre == code %}active{% endif %}">
+      {% if code == 'fantasy' %}🐉{% elif code == 'scifi' %}🛸{% elif code == 'mystery' %}🔍{% elif code == 'horror' %}👻{% elif code == 'adventure' %}🗺️{% elif code == 'romance' %}💌{% elif code == 'thriller' %}🔐{% elif code == 'comedy' %}😂{% endif %}
+      {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Table -->
+  <table class="lb-table">
+    <thead>
+      <tr>
+        <th style="width:60px;">Rank</th>
+        <th>Story</th>
+        <th>Genre</th>
+        <th>Plays</th>
+        <th>Rating</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for story in stories %}
+      <tr>
+        <td>
+          <div class="lb-rank {% if forloop.counter == 1 %}lb-rank-1{% elif forloop.counter == 2 %}lb-rank-2{% elif forloop.counter == 3 %}lb-rank-3{% else %}lb-rank-other{% endif %}">
+            {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+          </div>
+        </td>
+        <td>
+          <div class="lb-story-info">
+            <span class="lb-emoji">{{ story.cover_emoji }}</span>
+            <div>
+              <div class="lb-story-title">{{ story.title }}</div>
+              <div class="lb-story-meta">by {{ story.author.username }} · {{ story.node_count }} chapters</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="lb-genre-badge">{{ story.get_genre_display }}</span></td>
+        <td><span class="lb-plays">{{ story.play_count }}</span></td>
+        <td><span class="lb-rating">★ {{ story.avg_rating|floatformat:1|default:"—" }}</span></td>
+        <td><a href="{% url 'story_detail' story_id=story.pk %}" class="lb-play-btn">Play →</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:60px;color:var(--parch-faint);font-style:italic;">No stories found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

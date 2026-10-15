@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Sign In — StoryForge{% endblock %}
+{% block extra_head %}
+<style>
+.auth-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:60px 20px;}
+.auth-card{width:100%;max-width:440px;background:linear-gradient(155deg,var(--ink2),var(--ink));border:1px solid rgba(201,151,58,.22);border-radius:20px;padding:44px 40px;position:relative;overflow:hidden;}
+.auth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.auth-icon{font-size:44px;display:block;text-align:center;margin-bottom:20px;}
+.auth-title{font-family:'Cinzel',serif;font-size:26px;color:var(--parch);text-align:center;margin-bottom:8px;}
+.auth-sub{font-size:14px;color:var(--parch-faint);text-align:center;font-style:italic;margin-bottom:32px;}
+.auth-foot{text-align:center;margin-top:24px;font-size:14px;color:var(--parch-faint);}
+.auth-foot a{color:var(--gold);}
+@media(max-width:500px){.auth-card{padding:28px 20px;}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <span class="auth-icon">📖</span>
+    <h1 class="auth-title">Welcome Back</h1>
+    <p class="auth-sub">Your story continues here.</p>
+    {% if form.non_field_errors %}
+    <div class="sf-form-errors">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="sf-form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="sf-field-error">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="sf-btn sf-btn-primary sf-btn-full" style="margin-top:8px;">Sign In →</button>
+    </form>
+    <div class="auth-foot">New to StoryForge? <a href="{% url 'signup' %}">Create an account</a></div>
+  </div>
+</div>
+{% endblock %}

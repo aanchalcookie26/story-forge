@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile — StoryForge{% endblock %}
+{% block extra_head %}
+<style>
+.ep-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:60px 20px;}
+.ep-card{width:100%;max-width:500px;background:linear-gradient(155deg,var(--ink2),var(--ink));border:1px solid rgba(201,151,58,.22);border-radius:20px;padding:44px 40px;position:relative;overflow:hidden;}
+.ep-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.ep-title{font-family:'Cinzel',serif;font-size:24px;color:var(--parch);margin-bottom:6px;}
+.ep-sub{font-size:14px;color:var(--parch-faint);font-style:italic;margin-bottom:32px;}
+.ep-avatar-preview{width:72px;height:72px;border-radius:50%;background:var(--gold-dim);border:2px solid rgba(201,151,58,.3);display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:24px;}
+@media(max-width:500px){.ep-card{padding:28px 20px;}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="ep-wrap">
+  <div class="ep-card">
+    <div class="ep-avatar-preview" id="avatar-preview">
+      {{ account.avatar_emoji|default:"📖" }}
+    </div>
+    <h1 class="ep-title">Edit Profile</h1>
+    <p class="ep-sub">Customize how other readers see you.</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="sf-form-group">
+        <label>Avatar Emoji</label>
+        {{ form.avatar_emoji }}
+        {% if form.avatar_emoji.errors %}<div class="sf-field-error">{{ form.avatar_emoji.errors.0 }}</div>{% endif %}
+        <div style="font-size:12px;color:var(--parch-faint);margin-top:5px;">Paste any single emoji — it becomes your avatar</div>
+      </div>
+      <div class="sf-form-group">
+        <label>Bio</label>
+        {{ form.bio }}
+        {% if form.bio.errors %}<div class="sf-field-error">{{ form.bio.errors.0 }}</div>{% endif %}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+        <button type="submit" class="sf-btn sf-btn-primary">Save Changes</button>
+        <a href="{% url 'profile' username=request.user.username %}" class="sf-btn sf-btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+const emojiInput = document.querySelector('input[name="avatar_emoji"]');
+const preview = document.getElementById('avatar-preview');
+if(emojiInput && preview){
+  emojiInput.addEventListener('input', ()=>{
+    const v = emojiInput.value.trim();
+    preview.textContent = v || '📖';
+  });
+}
+</script>
+{% endblock %}

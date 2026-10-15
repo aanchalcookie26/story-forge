@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}{{ target_user.username }} — StoryForge{% endblock %}
+{% block extra_head %}
+<style>
+.prof-hero{padding:56px 0 40px;border-bottom:1px solid rgba(201,151,58,.12);margin-bottom:48px;}
+.prof-hero-inner{display:flex;gap:28px;align-items:center;flex-wrap:wrap;}
+.prof-avatar{width:90px;height:90px;border-radius:50%;background:var(--gold-dim);border:2px solid rgba(201,151,58,.4);display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;}
+.prof-name{font-family:'Cinzel',serif;font-size:clamp(22px,3.5vw,34px);color:var(--parch);margin-bottom:6px;}
+.prof-since{font-size:13px;color:var(--parch-faint);margin-bottom:14px;}
+.prof-bio{font-style:italic;color:var(--parch-dim);font-family:'Lora',serif;font-size:15px;max-width:500px;line-height:1.7;}
+.prof-stats{display:flex;gap:28px;margin-top:20px;flex-wrap:wrap;}
+.prof-stat{text-align:center;}
+.prof-stat-val{font-family:'Cinzel',serif;font-size:24px;color:var(--gold);display:block;}
+.prof-stat-lbl{font-size:11px;color:var(--parch-faint);}
+.prof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;}
+.prof-session-list{display:flex;flex-direction:column;gap:12px;}
+.prof-session{background:var(--ink2);border:1px solid rgba(201,151,58,.12);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+.prof-session-emoji{font-size:24px;flex-shrink:0;}
+.prof-session-title{font-size:14px;font-weight:500;color:var(--parch);margin-bottom:3px;}
+.prof-session-meta{font-size:12px;color:var(--parch-faint);}
+</style>
+{% endblock %}
+{% block content %}
+<div class="sf-container">
+  <div class="prof-hero">
+    <div class="prof-hero-inner">
+      <div class="prof-avatar">{% if account and account.avatar_emoji %}{{ account.avatar_emoji }}{% else %}📖{% endif %}</div>
+      <div style="flex:1;">
+        <div class="prof-name">{{ target_user.username }}</div>
+        <div class="prof-since">Member since {% if account %}{{ account.joined_at|date:"F Y" }}{% else %}{{ target_user.date_joined|date:"F Y" }}{% endif %}</div>
+        {% if account and account.bio %}<div class="prof-bio">{{ account.bio }}</div>{% endif %}
+        <div class="prof-stats">
+          <div class="prof-stat"><span class="prof-stat-val">{{ user_stories.count }}</span><span class="prof-stat-lbl">Stories Written</span></div>
+          <div class="prof-stat"><span class="prof-stat-val">{{ sessions.count }}</span><span class="prof-stat-lbl">Adventures Completed</span></div>
+        </div>
+        {% if is_own_profile %}
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="{% url 'edit_profile' %}" class="sf-btn sf-btn-secondary" style="padding:9px 20px;font-size:13px;">✏ Edit Profile</a>
+          <a href="{% url 'create_story' %}" class="sf-btn sf-btn-primary" style="padding:9px 20px;font-size:13px;">+ New Story</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Stories by author -->
+  {% if user_stories %}
+  <div style="margin-bottom:56px;">
+    <h2 class="sf-section-title" style="margin-bottom:8px;">Stories by {{ target_user.username }}</h2>
+    <div class="sf-divider"></div>
+    <div class="prof-grid">
+      {% for story in user_stories %}
+      <a href="{% url 'story_detail' story_id=story.pk %}" style="color:inherit;text-decoration:none;display:flex;">
+        <div class="sf-card sf-story-card" style="width:100%;">
+          <div class="sf-card-body" style="display:flex;flex-direction:column;height:100%;">
+            <span class="sf-card-emoji">{{ story.cover_emoji }}</span>
+            <div class="sf-genre-tag">{{ story.get_genre_display }}</div>
+            <div class="sf-card-title">{{ story.title }}</div>
+            <div class="sf-card-desc">{{ story.description|truncatechars:80 }}</div>
+            <div class="sf-card-meta">
+              <span class="sf-plays">🎮 {{ story.play_count }}</span>
+              <span class="sf-stars">★ {{ story.avg_rating|floatformat:1|default:"—" }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Completed sessions -->
+  {% if is_own_profile and sessions %}
+  <div>
+    <h2 class="sf-section-title" style="margin-bottom:8px;">Your Completed Adventures</h2>
+    <div class="sf-divider"></div>
+    <div class="prof-session-list">
+      {% for s in sessions %}
+      <div class="prof-session">
+        <div class="prof-session-emoji">{{ s.story.cover_emoji }}</div>
+        <div style="flex:1;">
+          <div class="prof-session-title">{{ s.story.title }}</div>
+          <div class="prof-session-meta">
+            Ending: <span class="sf-badge {% if s.ending_type == 'good' %}sf-badge-good{% elif s.ending_type == 'bad' %}sf-badge-bad{% else %}sf-badge-neutral{% endif %}">{{ s.ending_type|capfirst|default:"Completed" }}</span>
+            · {{ s.steps_taken }} steps · {{ s.last_updated|date:"M j, Y" }}
+          </div>
+        </div>
+        <a href="{% url 'story_play' story_id=s.story.pk %}" class="sf-btn sf-btn-secondary" style="padding:7px 14px;font-size:12px;">↺ Play Again</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

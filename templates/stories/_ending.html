@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}The End — {{ story.title }}{% endblock %}
+{% block content %}
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:60px 20px;text-align:center;">
+  <div style="max-width:620px;width:100%;">
+    <div style="font-size:72px;margin-bottom:24px;animation:ending-pulse 2s ease-in-out infinite;">
+      {% if node.ending_type == 'good' %}🏆{% elif node.ending_type == 'bad' %}💀{% else %}⚖️{% endif %}
+    </div>
+    <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:14px;
+      {% if node.ending_type == 'good' %}color:#6dbf82;{% elif node.ending_type == 'bad' %}color:#e87060;{% else %}color:var(--gold);{% endif %}">
+      ✦ {{ node.ending_type|capfirst|default:"Neutral" }} Ending ✦
+    </div>
+    <h1 style="font-family:'Cinzel',serif;font-size:clamp(24px,4vw,40px);color:var(--parch);margin-bottom:24px;">{{ node.title }}</h1>
+    <div style="font-family:'Lora',serif;font-size:17px;font-style:italic;line-height:1.9;color:rgba(245,237,216,.82);margin-bottom:40px;">
+      {{ node.text|linebreaks }}
+    </div>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'story_play' story_id=story.pk %}" class="sf-btn sf-btn-primary">↺ Play Again</a>
+      <a href="{% url 'story_detail' story_id=story.pk %}" class="sf-btn sf-btn-secondary">Story Details</a>
+      <a href="{% url 'homepage' %}" class="sf-btn sf-btn-secondary">🏠 Home</a>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes ending-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+</style>
+{% endblock %}
